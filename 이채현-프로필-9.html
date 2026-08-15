@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이채현 — 기술교사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16283D; --navy-deep:#0E1B29; --blue-line:#3E6089; --blue-line-soft:rgba(62,96,137,0.35);
+    --paper:#F3EFE3; --paper-dim:#E9E3D2; --copper:#C4854B; --copper-bright:#DDA36C;
+    --chalk:#EDEAE0; --graphite:#282622;
+    --serif:'Noto Serif KR', serif; --sans:'Noto Sans KR', sans-serif;
+    --mono:'JetBrains Mono', monospace; --grotesk:'Space Grotesk', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--navy); color:var(--chalk); font-family:var(--sans); overflow-x:hidden; -webkit-font-smoothing:antialiased;}
+  ::selection{background:var(--copper); color:var(--navy-deep);}
+  .grid-bg{position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(var(--blue-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--blue-line-soft) 1px, transparent 1px);
+    background-size:44px 44px; opacity:0.28;}
+  section, main, footer{position:relative; z-index:1;}
+  .crosshair{position:absolute; width:20px; height:20px; opacity:0.5;}
+  .crosshair::before,.crosshair::after{content:""; position:absolute; background:var(--copper);}
+  .crosshair::before{top:50%; left:0; width:100%; height:1px; transform:translateY(-50%);}
+  .crosshair::after{left:50%; top:0; height:100%; width:1px; transform:translateX(-50%);}
+  .crosshair.tl{top:20px; left:16px;} .crosshair.tr{top:20px; right:16px;}
+  .crosshair.bl{bottom:20px; left:16px;} .crosshair.br{bottom:20px; right:16px;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 32px;}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--copper-bright); display:flex; align-items:center; gap:12px; margin-bottom:26px;}
+  .eyebrow::before{content:""; width:26px; height:1px; background:var(--copper-bright);}
+  .hero{min-height:92vh; display:flex; flex-direction:column; justify-content:center; padding:100px 0 60px;}
+  .hero-inner{position:relative; border:1px solid var(--blue-line-soft); padding:48px 36px;}
+  .hero-flex{display:flex; flex-direction:column-reverse; gap:36px; align-items:center;}
+  .hero-text{flex:1 1 480px; min-width:0; width:100%;}
+  .hero-robot-col{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:10px;}
+  .robot-panel-label{font-family:var(--mono); font-size:10px; letter-spacing:0.16em; color:var(--blue-line); text-transform:uppercase;}
+  @media (min-width:860px){ .hero-flex{flex-direction:row; align-items:flex-end; justify-content:space-between;} }
+  h1{font-family:var(--serif); font-weight:900; font-size:clamp(48px,10vw,108px); line-height:0.95; letter-spacing:-0.02em; color:var(--paper);}
+  .role-text{font-family:var(--serif); font-weight:500; font-size:clamp(18px,2.6vw,24px); color:var(--copper-bright); margin-top:16px;}
+  .lede{font-family:var(--sans); font-weight:300; font-size:clamp(15px,1.8vw,18px); line-height:1.8; color:var(--chalk); max-width:560px; margin-top:24px; opacity:0.88;}
+  .title-block{margin-top:44px; width:100%; max-width:480px; border:1px solid var(--blue-line); font-family:var(--mono); font-size:12px;}
+  .tb-row{display:flex; border-top:1px solid var(--blue-line);}
+  .tb-row:first-child{border-top:none;}
+  .tb-cell{padding:10px 14px; flex:1; border-left:1px solid var(--blue-line);}
+  .tb-cell:first-child{border-left:none;}
+  .tb-label{color:var(--copper-bright); letter-spacing:0.08em; font-size:10px; margin-bottom:4px; text-transform:uppercase;}
+  .tb-value{color:var(--paper); font-family:var(--grotesk); font-size:13px;}
+
+  /* Robot */
+  .robot-stage{display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .robot-wrap{width:190px; height:190px;}
+  .speech-bubble{position:relative; background:var(--paper); color:var(--graphite); font-family:var(--mono); font-size:12.5px; padding:10px 16px; border:1px solid var(--blue-line); white-space:nowrap;}
+  .speech-bubble::before{content:""; position:absolute; top:-7px; left:50%; transform:translateX(-50%) rotate(45deg); width:12px; height:12px; background:var(--paper); border-left:1px solid var(--blue-line); border-top:1px solid var(--blue-line);}
+  #robotGroup{transition:transform 0.18s ease-out;}
+
+  /* Reveal */
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity 0.8s ease, transform 0.8s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  .section{padding:80px 0;}
+  .section-head{display:flex; align-items:baseline; gap:18px; margin-bottom:40px; flex-wrap:wrap;}
+  .section-num{font-family:var(--mono); font-size:12px; color:var(--blue-line); letter-spacing:0.1em;}
+  .section-title{font-family:var(--serif); font-weight:700; font-size:clamp(24px,3.4vw,36px); color:var(--paper);}
+  .intro-body{font-family:var(--sans); font-weight:300; font-size:16.5px; line-height:1.9; color:var(--chalk); max-width:640px; opacity:0.92;}
+
+  .timeline{display:flex; flex-direction:column; border-top:1px solid var(--blue-line-soft);}
+  .timeline-row{display:flex; align-items:baseline; gap:20px; padding:18px 0; border-bottom:1px solid var(--blue-line-soft); flex-wrap:wrap;}
+  .timeline-period{font-family:var(--mono); font-size:12.5px; color:var(--copper-bright); min-width:130px;}
+  .timeline-divider{width:24px; height:1px; background:var(--blue-line); margin-top:6px; flex-shrink:0;}
+  .timeline-title{font-family:var(--sans); font-size:15.5px; line-height:1.6; color:var(--paper);}
+  .timeline-title.accent{color:var(--copper-bright);}
+
+  .manuscript{background:var(--paper); color:var(--graphite); border:1px solid var(--blue-line); padding:44px 40px;}
+  .m-kicker{font-family:var(--mono); font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--blue-line); margin-bottom:14px;}
+  .m-title{font-family:var(--serif); font-weight:700; font-size:clamp(20px,2.8vw,28px); line-height:1.35; max-width:560px;}
+  .m-desc{font-family:var(--sans); font-size:15px; line-height:1.9; color:#4a463d; max-width:600px; margin-top:18px;}
+  .callout-row{display:flex; gap:12px; align-items:flex-start; margin-bottom:12px; margin-top:12px;}
+  .callout-dot{flex-shrink:0; width:7px; height:7px; border-radius:50%; background:var(--copper); margin-top:7px;}
+  .callout-txt{font-family:var(--sans); font-size:14px; line-height:1.7; color:#4a463d;}
+
+  .legend-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:26px; margin-top:30px;}
+  .legend-item{border-top:1px solid var(--blue-line-soft); padding-top:14px;}
+  .legend-num{font-family:var(--mono); font-size:11px; color:var(--copper-bright); letter-spacing:0.1em;}
+  .legend-item h4{font-family:var(--serif); font-weight:600; font-size:16.5px; color:var(--paper); margin:8px 0 6px;}
+  .legend-item p{font-family:var(--sans); font-weight:300; font-size:13.5px; line-height:1.7; color:var(--chalk); opacity:0.85;}
+
+  .help-toggle{margin-top:16px; background:transparent; border:1px solid var(--blue-line); color:var(--copper-bright); font-family:var(--mono); font-size:11.5px; padding:8px 14px; cursor:pointer;}
+  .help-text{font-family:var(--sans); font-size:13.5px; line-height:1.8; color:var(--chalk); opacity:0.85; margin-top:12px; max-width:560px; display:none;}
+  .qr-row{display:flex; gap:10px; margin-top:24px; flex-wrap:wrap;}
+  .qr-input{flex:1; min-width:220px; background:transparent; border:1px solid var(--blue-line); color:var(--paper); padding:10px 14px; font-family:var(--mono); font-size:12.5px;}
+  .qr-save-btn, .save-btn, .edit-fab, .qr-save-btn{background:var(--copper); color:var(--navy-deep); border:none; padding:10px 18px; font-family:var(--mono); font-size:12px; letter-spacing:0.05em; cursor:pointer;}
+  .qr-box{margin-top:28px; display:flex; flex-direction:column; align-items:flex-start; gap:10px; background:var(--paper); padding:20px; border:1px solid var(--blue-line); max-width:300px;}
+  .qr-box img{width:220px; height:220px;}
+  .qr-caption{font-family:var(--mono); font-size:10.5px; color:var(--graphite); opacity:0.7;}
+  .qr-placeholder{margin-top:24px; border:1px dashed var(--blue-line-soft); padding:30px; font-family:var(--mono); font-size:12px; color:var(--chalk); opacity:0.5; max-width:300px;}
+
+  footer{padding:56px 0 44px; border-top:1px solid var(--blue-line-soft); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;}
+  .footer-who{font-family:var(--serif); font-weight:700; font-size:17px; color:var(--paper);}
+  .footer-meta{font-family:var(--mono); font-size:11px; color:var(--blue-line); letter-spacing:0.05em;}
+
+  .edit-fab{position:fixed; top:20px; right:20px; z-index:20; background:var(--navy-deep); color:var(--copper-bright); border:1px solid var(--copper); padding:10px 16px; font-family:var(--mono); font-size:12px; letter-spacing:0.05em; border-radius:2px;}
+
+  #editView{display:none; max-width:720px; margin:0 auto; padding:100px 32px 80px; position:relative; z-index:1;}
+  .edit-title{font-family:var(--serif); font-weight:700; font-size:30px; color:var(--paper); margin-bottom:8px;}
+  .edit-hint{font-family:var(--sans); font-size:13px; color:var(--chalk); opacity:0.75; margin-bottom:30px;}
+  .edit-hint code{background:var(--navy-deep); padding:1px 6px; border-radius:3px; font-family:var(--mono);}
+  .field{margin-bottom:18px;}
+  .field-label{font-family:var(--mono); font-size:11.5px; color:var(--copper-bright); letter-spacing:0.06em; margin-bottom:6px; text-transform:uppercase;}
+  .field input, .field textarea{width:100%; background:transparent; border:1px solid var(--blue-line); color:var(--paper); padding:10px 12px; font-size:14.5px; font-family:var(--sans);}
+  .field textarea{font-size:14px; line-height:1.6; resize:vertical;}
+  .save-btn{padding:12px 26px; font-size:13px;}
+  #saveMsg{color:var(--copper-bright); font-family:var(--mono); font-size:12px; margin-left:12px;}
+  #loadingScreen{min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; letter-spacing:0.1em; opacity:0.6;}
+
+  @media (max-width:600px){
+    .hero-inner{padding:36px 20px;}
+    .title-block{max-width:100%;}
+    .section{padding:56px 0;}
+    footer{flex-direction:column; align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div id="loadingScreen">불러오는 중…</div>
+<button class="edit-fab" id="editToggleBtn" style="display:none;">✎ 편집</button>
+<main class="wrap" id="viewMode" style="display:none;"></main>
+<div id="editView"></div>
+
+<script>
+const STORAGE_KEY = "profile-content-v1";
+const EDIT_PIN = "0000";
+
+const DEFAULT_CONTENT = {
+  name: "이채현",
+  role: "기술을 가르치는 사람에서, 대체되지 않는 존재를 가르치는 사람으로",
+  school: "덕천중학교 · 기술교과 (부산교육청)",
+  bio: "기술 교과를 가르치며 늘 생각하는 질문은 하나입니다. AI가 무엇이든 대신할 수 있는 시대에, 학생에게 가르쳐야 할 것은 무엇인가. 기계요소를 설명하다 만난 학생의 사소한 오해, A4 한 장으로 시작한 조별 활동처럼 교실의 작은 순간들에서 그 답을 찾고, 그 과정을 글로 옮기는 일을 하고 있습니다.",
+  education: [
+    { period: "2018 – 2022", title: "충남대 사범대 기계공학교육과 졸업 (공학사)" },
+    { period: "2023 – 2025.8", title: "경북대 사범대 기술교육 석사 졸업 (교육학 석사)" },
+    { period: "2026.9 –", title: "서울대 사범대학 교육학 박사과정 재학 중" }
+  ],
+  career: [
+    { period: "2024.3 – 2026.2", title: "경남교육청 소속 공립 기계과목 정교사 · 고교학점제 담당" },
+    { period: "2026.3 –", title: "부산교육청 소속 공립 기술과목 정교사 (덕천중학교)" }
+  ],
+  activities: [
+    { period: "2024", title: "교육부 계간지 『행복한 교육』 명예기자" },
+    { period: "2026.9 –", title: "한국교총 미래교육보고서 집필진" }
+  ],
+  manuscript: {
+    kicker: "한국교총 · 미래교육보고서 집필진 투고 원고",
+    title: "AI 시대, 생존의 기술이 아닌\n대체되지 않는 존재를 가르치다",
+    desc: "조별 발표 중 한 학생이 기계요소 '링크'를 AI 답변만 보고 인터넷 링크로 오해했던 순간, 그리고 학생들이 흰 A4 용지 위에서 조 이름과 역할을 스스로 정의해 나가던 수업을 씨줄로 삼아, AI 시대의 교실에서 교사가 지켜야 할 자리를 이야기합니다.",
+    points: [
+      "교사-학생 상호작용은 AI 시대일수록 더 강조되어야 한다",
+      "모든 수업에 AI를 통합해 교과 역량과 AI 활용 능력을 함께 기른다",
+      "기술은 상상을 구현하는 도구일 뿐, 중심은 언제나 사람 냄새 나는 교육"
+    ]
+  },
+  appProject: {
+    desc: "중학생의 식생활 교육을 위한 어플리케이션 '급식일기'를 설계하고 있습니다. 급식을 기록하는 것을 넘어, 잔반을 줄일수록 쌓이는 탄소포인트로 작은 실천을 습관으로 만드는 것이 목표입니다.",
+    features: [
+      { tag: "01 · SIGN-UP", title: "알러지 체크", desc: "가입 시 학생 번호를 부여받고 알러지 성분을 등록, 식단표에 위험 성분이 있으면 알림을 받습니다." },
+      { tag: "02 · MENU", title: "NEIS 식단 연동", desc: "학교를 검색하면 나이스에 등록된 한 달 급식 메뉴가 자동으로 불러와집니다." },
+      { tag: "03 · DIARY", title: "식판 사진 다이어리", desc: "식판 사진을 올리면 메뉴명과 칼로리가 손글씨체로 표시되고, 하루하루 다이어리처럼 쌓입니다." },
+      { tag: "04 · CARBON", title: "잔반 탄소포인트", desc: "잔반이 적을수록 최대 5개까지 포인트가 쌓이고, 응원 메시지가 뜹니다." }
+    ]
+  },
+  qrUrl: ""
+};
+
+let content = JSON.parse(JSON.stringify(DEFAULT_CONTENT));
+
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toLines(arr, fmt){ return arr.map(fmt).join("\n"); }
+function parseTimeline(text){
+  return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+    const idx = l.indexOf("|");
+    if(idx === -1) return {period:"", title:l.trim()};
+    return {period:l.slice(0,idx).trim(), title:l.slice(idx+1).trim()};
+  });
+}
+function parsePoints(text){ return text.split("\n").map(l=>l.trim()).filter(Boolean); }
+function parseFeatures(text){
+  return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+    const parts = l.split("|").map(p=>p.trim());
+    return {tag:parts[0]||"", title:parts[1]||"", desc:parts[2]||""};
+  });
+}
+
+function timelineHTML(items, accent){
+  return '<div class="timeline">' + items.map(it =>
+    `<div class="timeline-row">
+      <div class="timeline-period">${esc(it.period)}</div>
+      <div class="timeline-divider"></div>
+      <div class="timeline-title${accent?' accent':''}">${esc(it.title)}</div>
+    </div>`
+  ).join("") + '</div>';
+}
+
+function robotSVG(){
+  return `
+  <div class="robot-stage">
+    <div class="robot-wrap" id="robotWrap">
+      <svg viewBox="0 0 220 220" style="width:100%;height:100%;overflow:visible;">
+        <g id="robotGroup" style="transform-origin:110px 150px;">
+          <line x1="110" y1="18" x2="110" y2="34" stroke="var(--paper)" stroke-width="2.5"/>
+          <circle cx="110" cy="14" r="5" fill="var(--navy)" stroke="var(--copper)" stroke-width="2.5">
+            <animate attributeName="r" values="5;6;5" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+          <rect x="53" y="34" width="114" height="86" rx="20" fill="var(--navy)" stroke="var(--paper)" stroke-width="2.5"/>
+          <circle cx="83" cy="84" r="15" fill="var(--paper)"/>
+          <circle cx="137" cy="84" r="15" fill="var(--paper)"/>
+          <g id="eyesOpen">
+            <circle id="pupilL" cx="83" cy="84" r="6.5" fill="var(--navy-deep)"/>
+            <circle id="pupilR" cx="137" cy="84" r="6.5" fill="var(--navy-deep)"/>
+            <circle id="glintL" cx="81" cy="82" r="1.6" fill="var(--paper)"/>
+            <circle id="glintR" cx="135" cy="82" r="1.6" fill="var(--paper)"/>
+          </g>
+          <g id="eyesClosed" style="display:none;">
+            <rect x="75" y="82" width="16" height="3" rx="1.5" fill="var(--navy-deep)"/>
+            <rect x="129" y="82" width="16" height="3" rx="1.5" fill="var(--navy-deep)"/>
+          </g>
+          <line x1="110" y1="120" x2="110" y2="134" stroke="var(--paper)" stroke-width="2.5"/>
+          <rect x="68" y="134" width="84" height="66" rx="16" fill="none" stroke="var(--paper)" stroke-width="2.5"/>
+          <circle cx="110" cy="167" r="7" fill="none" stroke="var(--copper)" stroke-width="2.5">
+            <animate attributeName="opacity" values="1;0.35;1" dur="1.8s" repeatCount="indefinite"/>
+          </circle>
+          <line x1="68" y1="150" x2="46" y2="164" stroke="var(--paper)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="152" y1="150" x2="174" y2="164" stroke="var(--paper)" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+      </svg>
+    </div>
+    <div class="speech-bubble">Hello. I'm Chaehyun.</div>
+  </div>`;
+}
+
+function renderView(){
+  const c = content;
+  const schoolShort = c.school.split("·")[0].trim().toUpperCase();
+  document.getElementById("viewMode").innerHTML = `
+    <section class="hero">
+      <div class="hero-inner">
+        <span class="crosshair tl"></span><span class="crosshair tr"></span>
+        <span class="crosshair bl"></span><span class="crosshair br"></span>
+        <div class="hero-flex">
+          <div class="hero-text">
+            <p class="eyebrow">TECHNOLOGY TEACHER · ${esc(schoolShort)}</p>
+            <h1>${esc(c.name)}</h1>
+            <p class="role-text">${esc(c.role)}</p>
+            <p class="lede">${esc(c.bio)}</p>
+            <div class="title-block">
+              <div class="tb-row">
+                <div class="tb-cell"><div class="tb-label">Name</div><div class="tb-value">${esc(c.name)}</div></div>
+                <div class="tb-cell"><div class="tb-label">Dept.</div><div class="tb-value">${esc(c.school)}</div></div>
+              </div>
+              <div class="tb-row">
+                <div class="tb-cell"><div class="tb-label">Status</div><div class="tb-value">서울대 교육학 박사과정</div></div>
+                <div class="tb-cell"><div class="tb-label">No.</div><div class="tb-value">2026 · PROFILE 01</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="hero-robot-col">
+            <div class="robot-panel-label">UNIT-01 · GREETER</div>
+            ${robotSVG()}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">01 — EDUCATION</span><h2 class="section-title">학력</h2></div>
+      ${timelineHTML(c.education)}
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">02 — CAREER</span><h2 class="section-title">경력</h2></div>
+      ${timelineHTML(c.career)}
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">03 — ACTIVITIES</span><h2 class="section-title">활동 · 집필</h2></div>
+      ${timelineHTML(c.activities, true)}
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">04 — MANUSCRIPT</span><h2 class="section-title">지금 쓰고 있는 글</h2></div>
+      <div class="manuscript">
+        <p class="m-kicker">${esc(c.manuscript.kicker)}</p>
+        <h3 class="m-title">${esc(c.manuscript.title).replace(/\n/g,"<br>")}</h3>
+        <p class="m-desc">${esc(c.manuscript.desc)}</p>
+        <div>
+          ${c.manuscript.points.map(p => `<div class="callout-row"><span class="callout-dot"></span><span class="callout-txt">${esc(p)}</span></div>`).join("")}
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">05 — PROTOTYPE</span><h2 class="section-title">기획 중인 프로젝트 · 급식일기</h2></div>
+      <p class="intro-body">${esc(c.appProject.desc)}</p>
+      <div class="legend-grid">
+        ${c.appProject.features.map(f => `
+          <div class="legend-item">
+            <div class="legend-num">${esc(f.tag)}</div>
+            <h4>${esc(f.title)}</h4>
+            <p>${esc(f.desc)}</p>
+          </div>`).join("")}
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="section-head"><span class="section-num">06 — SHARE</span><h2 class="section-title">QR로 연결하기</h2></div>
+      <p class="intro-body">
+        이 페이지를 게시(공유)한 뒤 받은 링크를 아래에 붙여넣으면, 그 주소로 연결되는 QR 코드가 만들어집니다.
+        이후 내용을 바꾸고 싶을 때는 우측 상단의 '편집' 버튼으로 언제든 이 페이지 자체를 다시 고칠 수 있습니다 — 같은 QR을 계속 써도 됩니다.
+      </p>
+      <button class="help-toggle" id="qrHelpBtn">링크는 어디서 받나요?</button>
+      <p class="help-text" id="qrHelpText">
+        Claude 대화창에서 이 아티팩트의 공유(Publish) 버튼을 눌러 게시하면 공개 링크가 생깁니다. 그 링크를 복사해 아래 입력창에 붙여넣어 주세요.
+      </p>
+      <div class="qr-row">
+        <input type="text" class="qr-input" id="qrUrlInput" placeholder="https://claude.ai/public/..." value="${esc(c.qrUrl)}">
+        <button class="qr-save-btn" id="qrSaveBtn">주소 저장</button>
+      </div>
+      <div id="qrDisplay">
+        ${c.qrUrl ? `<div class="qr-box">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=${encodeURIComponent(c.qrUrl)}" alt="QR code">
+            <span class="qr-caption">이미지를 길게 눌러(또는 우클릭) 저장하세요</span>
+          </div>`
+        : `<div class="qr-placeholder">주소를 입력하면 QR이 여기에 표시됩니다</div>`}
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <div class="footer-who">${esc(c.name)}</div>
+        <div class="footer-meta">${esc(c.school)}</div>
+      </div>
+      <div class="footer-meta">DRAWING NO. 2026-08 · SCALE 1:1</div>
+    </footer>
+  `;
+
+  initReveal();
+  initRobot();
+  document.getElementById("qrHelpBtn").onclick = () => {
+    const t = document.getElementById("qrHelpText");
+    t.style.display = t.style.display === "block" ? "none" : "block";
+  };
+  document.getElementById("qrSaveBtn").onclick = async () => {
+    content.qrUrl = document.getElementById("qrUrlInput").value.trim();
+    try { await window.storage.set(STORAGE_KEY, JSON.stringify(content), true); } catch(e){}
+    renderView();
+  };
+}
+
+function initReveal(){
+  const els = document.querySelectorAll(".reveal");
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add("in"); });
+  }, {threshold:0.12});
+  els.forEach(el => io.observe(el));
+}
+
+let robotListenersAttached = false;
+function initRobot(){
+  const wrap = document.getElementById("robotWrap");
+  const group = document.getElementById("robotGroup");
+  const pupilL = document.getElementById("pupilL");
+  const pupilR = document.getElementById("pupilR");
+  const glintL = document.getElementById("glintL");
+  const glintR = document.getElementById("glintR");
+  if(!wrap) return;
+
+  function update(clientX, clientY){
+    const rect = wrap.getBoundingClientRect();
+    if(!rect.width) return;
+    const scale = rect.width / 220;
+    const localX = (clientX - rect.left) / scale;
+    const localY = (clientY - rect.top) / scale;
+
+    function offsetFor(eyeX, eyeY){
+      const dx = localX - eyeX, dy = localY - eyeY;
+      const dist = Math.min(4.5, Math.hypot(dx,dy)/14);
+      const angle = Math.atan2(dy,dx);
+      return {x: Math.cos(angle)*dist, y: Math.sin(angle)*dist};
+    }
+    const l = offsetFor(83,84), r = offsetFor(137,84);
+    if(pupilL){ pupilL.setAttribute("cx", 83+l.x); pupilL.setAttribute("cy", 84+l.y); }
+    if(pupilR){ pupilR.setAttribute("cx", 137+r.x); pupilR.setAttribute("cy", 84+r.y); }
+    if(glintL){ glintL.setAttribute("cx", 81+l.x); glintL.setAttribute("cy", 82+l.y); }
+    if(glintR){ glintR.setAttribute("cx", 135+r.x); glintR.setAttribute("cy", 82+r.y); }
+
+    const centerX = rect.left + rect.width/2;
+    const deg = Math.max(-9, Math.min(9, (clientX - centerX)/34));
+    if(group) group.style.transform = `rotate(${deg}deg)`;
+  }
+
+  if(!robotListenersAttached){
+    window.addEventListener("mousemove", e => update(e.clientX, e.clientY), {passive:true});
+    window.addEventListener("touchmove", e => { if(e.touches[0]) update(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+    robotListenersAttached = true;
+  }
+
+  const eyesOpen = document.getElementById("eyesOpen");
+  const eyesClosed = document.getElementById("eyesClosed");
+  setInterval(() => {
+    if(!eyesOpen || !eyesClosed) return;
+    eyesOpen.style.display = "none"; eyesClosed.style.display = "block";
+    setTimeout(() => { eyesOpen.style.display = "block"; eyesClosed.style.display = "none"; }, 140);
+  }, 3600);
+}
+
+function openEditView(){
+  const c = content;
+  document.getElementById("viewMode").style.display = "none";
+  const ev = document.getElementById("editView");
+  ev.style.display = "block";
+  ev.innerHTML = `
+    <h2 class="edit-title">내용 편집</h2>
+    <p class="edit-hint">여러 줄 항목은 <code>기간 | 내용</code> 형식으로 한 줄에 하나씩 입력하세요.</p>
+
+    <div class="field"><div class="field-label">이름</div><input id="f_name" value="${esc(c.name)}"></div>
+    <div class="field"><div class="field-label">한 줄 소개(부제)</div><input id="f_role" value="${esc(c.role)}"></div>
+    <div class="field"><div class="field-label">소속</div><input id="f_school" value="${esc(c.school)}"></div>
+    <div class="field"><div class="field-label">자기소개</div><textarea id="f_bio" rows="4">${esc(c.bio)}</textarea></div>
+
+    <div class="field"><div class="field-label">학력 (기간 | 내용)</div><textarea id="f_edu" rows="4">${esc(toLines(c.education, e=>e.period+" | "+e.title))}</textarea></div>
+    <div class="field"><div class="field-label">경력 (기간 | 내용)</div><textarea id="f_career" rows="4">${esc(toLines(c.career, e=>e.period+" | "+e.title))}</textarea></div>
+    <div class="field"><div class="field-label">활동·집필 (기간 | 내용)</div><textarea id="f_act" rows="3">${esc(toLines(c.activities, e=>e.period+" | "+e.title))}</textarea></div>
+
+    <div class="field"><div class="field-label">원고 - 발행처/구분</div><input id="f_mk" value="${esc(c.manuscript.kicker)}"></div>
+    <div class="field"><div class="field-label">원고 - 제목 (줄바꿈 가능)</div><textarea id="f_mt" rows="2">${esc(c.manuscript.title)}</textarea></div>
+    <div class="field"><div class="field-label">원고 - 설명</div><textarea id="f_md" rows="4">${esc(c.manuscript.desc)}</textarea></div>
+    <div class="field"><div class="field-label">원고 - 핵심 주장 (한 줄에 하나씩)</div><textarea id="f_mp" rows="3">${esc(toLines(c.manuscript.points, p=>p))}</textarea></div>
+
+    <div class="field"><div class="field-label">프로젝트 - 설명</div><textarea id="f_ad" rows="3">${esc(c.appProject.desc)}</textarea></div>
+    <div class="field"><div class="field-label">프로젝트 - 기능 (구분 | 제목 | 설명)</div><textarea id="f_af" rows="5">${esc(toLines(c.appProject.features, f=>f.tag+" | "+f.title+" | "+f.desc))}</textarea></div>
+
+    <div style="display:flex; gap:12px; align-items:center; margin-top:24px;">
+      <button class="save-btn" id="saveBtn">저장하기</button>
+      <span id="saveMsg"></span>
+    </div>
+  `;
+  document.getElementById("saveBtn").onclick = saveEdit;
+}
+
+async function saveEdit(){
+  const btn = document.getElementById("saveBtn");
+  const msg = document.getElementById("saveMsg");
+  btn.disabled = true; btn.textContent = "저장 중…";
+  const next = {
+    name: document.getElementById("f_name").value,
+    role: document.getElementById("f_role").value,
+    school: document.getElementById("f_school").value,
+    bio: document.getElementById("f_bio").value,
+    education: parseTimeline(document.getElementById("f_edu").value),
+    career: parseTimeline(document.getElementById("f_career").value),
+    activities: parseTimeline(document.getElementById("f_act").value),
+    manuscript: {
+      kicker: document.getElementById("f_mk").value,
+      title: document.getElementById("f_mt").value,
+      desc: document.getElementById("f_md").value,
+      points: parsePoints(document.getElementById("f_mp").value)
+    },
+    appProject: {
+      desc: document.getElementById("f_ad").value,
+      features: parseFeatures(document.getElementById("f_af").value)
+    },
+    qrUrl: content.qrUrl
+  };
+  try{
+    const res = await window.storage.set(STORAGE_KEY, JSON.stringify(next), true);
+    if(res){
+      content = next;
+      closeEditView();
+    } else {
+      msg.textContent = "저장에 실패했습니다. 다시 시도해주세요.";
+    }
+  }catch(e){
+    msg.textContent = "저장 중 오류가 발생했습니다.";
+  }finally{
+    btn.disabled = false; btn.textContent = "저장하기";
+  }
+}
+
+function closeEditView(){
+  document.getElementById("editView").style.display = "none";
+  document.getElementById("viewMode").style.display = "block";
+  renderView();
+}
+
+document.getElementById("editToggleBtn").onclick = () => {
+  const editing = document.getElementById("editView").style.display === "block";
+  if(editing){
+    closeEditView();
+  } else {
+    const pin = window.prompt("편집 PIN을 입력하세요");
+    if(pin !== EDIT_PIN){
+      if(pin !== null) alert("PIN이 올바르지 않습니다.");
+      return;
+    }
+    openEditView();
+    document.getElementById("editToggleBtn").textContent = "닫기";
+  }
+};
+
+(async function init(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, true);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      content = Object.assign({}, DEFAULT_CONTENT, parsed);
+    }
+  }catch(e){
+    // no saved content yet — use defaults
+  }
+  document.getElementById("loadingScreen").style.display = "none";
+  document.getElementById("editToggleBtn").style.display = "block";
+  document.getElementById("viewMode").style.display = "block";
+  renderView();
+})();
+</script>
+</body>
+</html>
